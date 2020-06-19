@@ -4,7 +4,7 @@ import org.opencv.core.*;
 import org.opencv.objdetect.*;
 
 // image settings
-final String IMG_PATH = "leworthy.jpg";
+final String IMG_PATH = "beach.jpg";
 
 // hinton settings
 final float MAG_INVERSE_OFFSET = 1;
@@ -153,18 +153,18 @@ void iterateDescriptors() {
 	// Iterate through the first descriptor contents in the HOG result
 	
 	// Blocks themselves
-	int blockX = 0;
-	int blockY = 0;
+	int blockX = 0; // Represents the `blockX`th block from the left of the descriptor result
+	int blockY = 0; // Represents the `blockY`th block from the top of the descriptor result
 	
 	// Cells within each block
-	int blockCellX = 0;
-	int blockCellY = 0;
+	int blockCellX = 0; // Represents the `blockCellX`th cell from the left within the block
+	int blockCellY = 0; // Represents the `blockCellY`th cell from the top within the block
 	
 	for (long index = 0; index < hog.getDescriptorSize(); index += hog.get_nbins()) {
 		float mid = (float)hog.get_cellSize().width / 2;
 
-		float y = (float)(hog.get_blockStride().height * blockY + hog.get_cellSize().height * blockCellY);
-		float x = (float)(hog.get_blockStride().width * blockX + hog.get_cellSize().width * blockCellX);
+		float y = (float)(hog.get_blockStride().height * blockY + hog.get_cellSize().height * blockCellY); // Y coordinate (px) of the current cell
+		float x = (float)(hog.get_blockStride().width * blockX + hog.get_cellSize().width * blockCellX); // X coordinate (px) of the current cell
 		
 		int cellY = (int)(y / hog.get_cellSize().height);
 		int cellX = (int)(x / hog.get_cellSize().width);
@@ -172,11 +172,11 @@ void iterateDescriptors() {
 		createCell(index, cellY, cellX, y + mid, x + mid);
 		
 		
-		// Increment all position markers
+		// Increment all position markers (equivalent alternative to having 5 nested `for`-loops)
 		blockCellY++;
 		
-		blockCellX += blockCellY / cellsPerBlockY;
-		blockCellY %= cellsPerBlockY;
+		blockCellX += blockCellY / cellsPerBlockY; // If `blockCellY` > `cellsPerBlockY`, `blockCellX` will increment by 1, otherwise it will not increment
+		blockCellY %= cellsPerBlockY; // If `blockCellX` was incremented, `blockCellY` will be reset down to 0
 		
 		blockY += blockCellX / cellsPerBlockX;
 		blockCellX %= cellsPerBlockX;
