@@ -4,10 +4,10 @@ import org.opencv.core.*;
 import org.opencv.objdetect.*;
 
 // image settings
-final String IMG_PATH = "beach.jpg";
+final String IMG_PATH = "leworthy.jpg";
 
 // hinton settings
-final float MAG_INVERSE_OFFSET = 1;
+final float MAG_INVERSE_OFFSET = 1; // Constant that determines how much stretching is applied to all hinton cells
 
 final color BASE_DARK_COL = color(0, 63, 91);
 final color BASE_LIGHT_COL = color(181, 173, 62);
@@ -161,15 +161,13 @@ void iterateDescriptors() {
 	int blockCellY = 0; // Represents the `blockCellY`th cell from the top within the block
 	
 	for (long index = 0; index < hog.getDescriptorSize(); index += hog.get_nbins()) {
-		float mid = (float)hog.get_cellSize().width / 2;
-
 		float y = (float)(hog.get_blockStride().height * blockY + hog.get_cellSize().height * blockCellY); // Y coordinate (px) of the current cell
 		float x = (float)(hog.get_blockStride().width * blockX + hog.get_cellSize().width * blockCellX); // X coordinate (px) of the current cell
 		
 		int cellY = (int)(y / hog.get_cellSize().height);
 		int cellX = (int)(x / hog.get_cellSize().width);
 
-		createCell(index, cellY, cellX, y + mid, x + mid);
+		createCell(index, cellY, cellX);
 		
 		
 		// Increment all position markers (equivalent alternative to having 5 nested `for`-loops)
@@ -189,7 +187,13 @@ void iterateDescriptors() {
 	}
 }
 
-void createCell(long index, int cellY, int cellX, float y, float x) {
+void createCell(long index, int cellY, int cellX) {
+    HintonCell cell = hintonCells[cellY][cellX];
+    if (cell == null) {
+        cell = new HintonCell(avgCol(cellY, cellX));
+        hintonCells[cellY][cellX] = cell;
+    }
+    
 	float maxWeight = 0;
 	float angle = 0;
 	
@@ -202,10 +206,7 @@ void createCell(long index, int cellY, int cellX, float y, float x) {
 		}
 	}
 	
-	HintonCell cell = new HintonCell(avgCol(cellY, cellX));
-	hintonCells[cellY][cellX] = cell;
-	cell.magnitude = maxWeight;
-	cell.descriptorAngles.add(angle);
+	cell.countDescriptorCell(angle, maxWeight);
 
 	
 	// Draws normal lines

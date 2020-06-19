@@ -1,22 +1,20 @@
 class HintonCell {
-	public color avgCol;
-	public ArrayList<Float> descriptorAngles;
-  	public float magnitude;
+	color avgCol;
+
+    private float angle;
+  	private float magnitude;
+  	private float nDescriptorCells = 0;
   
 	private float lumCache = Float.NaN;
 	
-	public HintonCell() {
-		descriptorAngles = new ArrayList<Float>();
-	}
+	HintonCell() {}
 	
-	public HintonCell(color avgCol) {
-		this();
-		
+	HintonCell(color avgCol) {
 		this.avgCol = avgCol;
 	}
 
 	// Only considers paint colors on the same side of the threshold as this cell's color
-	public color closestPaintCol() {
+	color closestPaintCol() {
 		float leastDist = Float.POSITIVE_INFINITY;
 		color closestCol = 0;
 
@@ -68,24 +66,23 @@ class HintonCell {
 		return closestCol;
 	}
 
-	public float lum() {
+	float lum() {
 		if (Float.isNaN(lumCache)) {
 			lumCache = luminance(avgCol);
 		}
 	
 		return lumCache;
 	}
-	
-	public float angle() {
-		float cumSum = 0;
-		for (float descriptorAngle : descriptorAngles) {
-			cumSum += descriptorAngle;
-		}
-		
-		return cumSum / descriptorAngles.size();
+
+	void countDescriptorCell(float descriptorAngle, float maxWeight) {
+    	nDescriptorCells++;
+    
+    	// Equivalent to calculating the average
+        angle = ((nDescriptorCells - 1.) / nDescriptorCells) * angle + (1. / nDescriptorCells) * descriptorAngle;
+        magnitude = ((nDescriptorCells - 1.) / nDescriptorCells) * magnitude + (1. / nDescriptorCells) * maxWeight;
 	}
 	
-	public void fillShape(int cellY, int cellX) {
+	void fillShape(int cellY, int cellX) {
 		float brightnessDiff = lum() - brightnessThreshold;
 
 		color col = colorFromBrightness(lum(), closestPaintCol());//colorFromBrightness(lum());
@@ -104,7 +101,7 @@ class HintonCell {
 		fill(col);
 		
 		translate(x, y);
-		rotate(angle());
+		rotate(angle);
 		scale(1 / magInverse, magInverse);
 		
 		//rect(0, 0, unitWidth * (float)hog.get_cellSize().width, unitWidth * (float)hog.get_cellSize().height);
