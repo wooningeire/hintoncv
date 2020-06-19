@@ -20,16 +20,16 @@ final color PAINT_BLACK = color(36, 36, 36); // black - Carbon Black #1040
 {
 	Collections.addAll(paintCols,
 			// ids based on Golden’s heavy body paints - https://www.goldenpaints.com/products/colors/heavy-body
-			color(191, 1, 1), // red - Pyrolle Red #1277
-			color(253, 68, 1), // orange - C.P. Cadmium Orange #1070
-			color(249, 160, 32), // orange-yellow - Indian Yellow Hue #1455
-			color(252, 231, 2), // yellow - Benzimidazolone Yellow Light #1009
+			color(198, 48, 34), // red - Quinacridone Burnt Orange #1280
+			color(233, 112, 39), // orange - Quinacridone / Nickel Azo Gold #1301
+			color(249, 160, 32), // yellow - Indian Yellow Hue #1455
 			color(21, 105, 71), // green - Phthalo Green (Yellow Shade) #1275
-			color(22, 90, 89), // cyan - Phthalo Green (Blue Shade) #1270
-			color(35, 70, 170), // blue - Cobalt Blue Hue #1556
+			color(22, 90, 89), // teal - Phthalo Green (Blue Shade) #1270
+			color(52, 149, 207), // cyan - Manganese Blue Hue #1457
+			color(19, 72, 200), // blue - Cobalt Blue #1140
 			color(78, 70, 147), // purple - Ultramarine Violet #1401
 			color(108, 41, 82), // violet - Cobalt Violet Hue #1465
-			color(162, 6, 43) // magenta - Quinacridone Magenta #1305
+			color(188, 29, 70) // magenta - Quinacridone Magenta #1305
 	);
 	
 	//paintColsList = new ArrayList<Integer>(paintCols);

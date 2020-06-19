@@ -38,11 +38,21 @@ class HintonCell {
 				continue;
   			}
 	
-			float hueDiff = min(abs(hue(paintCol) - hue(avgCol)), 360 - abs(hue(paintCol) - hue(avgCol)));
-			float satDiff = saturation(paintCol) - saturation(avgCol);
-			float lumDiff = paintColLum - lum();
+			//float hueDiff = min(abs(hue(paintCol) - hue(avgCol)), 360 - abs(hue(paintCol) - hue(avgCol)));
+			//float satDiff = saturation(paintCol) - saturation(avgCol);
+			//float lumDiff = paintColLum - lum();
 			
-			float dist = sq(hueDiff) + sq(satDiff) + sq(lumDiff);
+			//float dist = sq(hueDiff) + sq(satDiff) + sq(lumDiff);
+
+			// Perceived color distance according to https://en.wikipedia.org/wiki/Color_difference
+            float redDiff = (red(paintCol) - red(avgCol)) / 255;
+            float greenDiff = (green(paintCol) - green(avgCol)) / 255;
+            float blueDiff = (blue(paintCol) - blue(avgCol)) / 255;
+            
+            float redAvg = (red(paintCol) + red(avgCol)) / 2;
+            
+            float dist = (2 + redAvg / 256) * sq(redDiff) + 4 * sq(greenDiff) + (2 + (255 - redAvg) / 256) * sq(blueDiff);
+
 			if (dist < leastDist) {
 				leastDist = dist;
 				closestCol = paintCol;
