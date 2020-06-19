@@ -3,7 +3,7 @@ class HintonCell {
 	public ArrayList<Float> descriptorAngles;
   	public float magnitude;
   
-    private float lumCache = Float.NaN;
+	private float lumCache = Float.NaN;
 	
 	public HintonCell() {
 		descriptorAngles = new ArrayList<Float>();
@@ -15,7 +15,7 @@ class HintonCell {
 		this.avgCol = avgCol;
 	}
 
-    // Only considers paint colors on the same side of the threshold as this cell's color
+	// Only considers paint colors on the same side of the threshold as this cell's color
 	public color closestPaintCol() {
 		float leastDist = Float.POSITIVE_INFINITY;
 		color closestCol = 0;
@@ -26,44 +26,44 @@ class HintonCell {
 
 		// not optimized
 		for (color paintCol : paintCols) {
-            //if (i == paintCols.size() && validColFound) {
-            //    // Only use black/white if no other color was available
-            //    break;
-            //}
-            
-    		//color paintCol = paintColsList.get(i);
-    
-    		float paintColLum = luminance(paintCol);
-    		if (brighter && paintColLum - brightnessThreshold < 0 || !brighter && paintColLum - brightnessThreshold > 0) {
-        		continue;
+			//if (i == paintCols.size() && validColFound) {
+			//	// Only use black/white if no other color was available
+			//	break;
+			//}
+			
+			//color paintCol = paintColsList.get(i);
+	
+			float paintColLum = luminance(paintCol);
+			if (brighter && paintColLum - brightnessThreshold < 0 || !brighter && paintColLum - brightnessThreshold > 0) {
+				continue;
   			}
-    
-    		float hueDiff = min(abs(hue(paintCol) - hue(avgCol)), 360 - abs(hue(paintCol) - hue(avgCol)));
-            float satDiff = saturation(paintCol) - saturation(avgCol);
-            float lumDiff = paintColLum - lum();
-            
-            float dist = sq(hueDiff) + sq(satDiff) + sq(lumDiff);
-            if (dist < leastDist) {
-                leastDist = dist;
-                closestCol = paintCol;
-                
-                validColFound = true;
-            }
-    	}
-    
+	
+			float hueDiff = min(abs(hue(paintCol) - hue(avgCol)), 360 - abs(hue(paintCol) - hue(avgCol)));
+			float satDiff = saturation(paintCol) - saturation(avgCol);
+			float lumDiff = paintColLum - lum();
+			
+			float dist = sq(hueDiff) + sq(satDiff) + sq(lumDiff);
+			if (dist < leastDist) {
+				leastDist = dist;
+				closestCol = paintCol;
+				
+				validColFound = true;
+			}
+		}
+	
    		if (!validColFound) {
-       		throw new RuntimeException("No paint color was found that can represent this cell color's brightness");
-       	}
-    
-    	return closestCol;
+	   		throw new RuntimeException("No paint color was found that can represent this cell color's brightness");
+	   	}
+	
+		return closestCol;
 	}
 
 	public float lum() {
-    	if (Float.isNaN(lumCache)) {
-        	lumCache = luminance(avgCol);
-    	}
-    
-    	return lumCache;
+		if (Float.isNaN(lumCache)) {
+			lumCache = luminance(avgCol);
+		}
+	
+		return lumCache;
 	}
 	
 	public float angle() {

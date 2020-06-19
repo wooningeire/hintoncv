@@ -18,22 +18,22 @@ Set<Integer> paintCols = new HashSet<Integer>();
 final color PAINT_WHITE = color(252, 254, 255); // white - Titanium White #1380
 final color PAINT_BLACK = color(36, 36, 36); // black - Carbon Black #1040
 {
-    Collections.addAll(paintCols,
-    		// ids based on Golden’s heavy body paints - https://www.goldenpaints.com/products/colors/heavy-body
-    		color(191, 1, 1), // red - Pyrolle Red #1277
-            color(253, 68, 1), // orange - C.P. Cadmium Orange #1070
-            color(249, 160, 32), // orange-yellow - Indian Yellow Hue #1455
-            color(252, 231, 2), // yellow - Benzimidazolone Yellow Light #1009
-            color(21, 105, 71), // green - Phthalo Green (Yellow Shade) #1275
-            color(22, 90, 89), // cyan - Phthalo Green (Blue Shade) #1270
-            color(35, 70, 170), // blue - Cobalt Blue Hue #1556
-            color(78, 70, 147), // purple - Ultramarine Violet #1401
-            color(108, 41, 82), // violet - Cobalt Violet Hue #1465
-            color(162, 6, 43) // magenta - Quinacridone Magenta #1305
-    );
-    
-    //paintColsList = new ArrayList<Integer>(paintCols);
-    //Collections.addAll(paintColsList, PAINT_WHITE, PAINT_BLACK);
+	Collections.addAll(paintCols,
+			// ids based on Golden’s heavy body paints - https://www.goldenpaints.com/products/colors/heavy-body
+			color(191, 1, 1), // red - Pyrolle Red #1277
+			color(253, 68, 1), // orange - C.P. Cadmium Orange #1070
+			color(249, 160, 32), // orange-yellow - Indian Yellow Hue #1455
+			color(252, 231, 2), // yellow - Benzimidazolone Yellow Light #1009
+			color(21, 105, 71), // green - Phthalo Green (Yellow Shade) #1275
+			color(22, 90, 89), // cyan - Phthalo Green (Blue Shade) #1270
+			color(35, 70, 170), // blue - Cobalt Blue Hue #1556
+			color(78, 70, 147), // purple - Ultramarine Violet #1401
+			color(108, 41, 82), // violet - Cobalt Violet Hue #1465
+			color(162, 6, 43) // magenta - Quinacridone Magenta #1305
+	);
+	
+	//paintColsList = new ArrayList<Integer>(paintCols);
+	//Collections.addAll(paintColsList, PAINT_WHITE, PAINT_BLACK);
 }
 
 color bgCol = color(127);//color(63, 91, 101);
@@ -88,37 +88,37 @@ void setup() {
 }
 
 void draw() {
-    clear();
-    
-    // Draw all hinton cells
-    scale(2, 2);
-    
-    noStroke();
-    ellipseMode(CENTER);
-    rectMode(CENTER);
-    
-    background(bgCol);
-    brightnessThreshold = luminance(bgCol);
+	clear();
+	
+	// Draw all hinton cells
+	scale(2, 2);
+	
+	noStroke();
+	ellipseMode(CENTER);
+	rectMode(CENTER);
+	
+	background(bgCol);
+	brightnessThreshold = luminance(bgCol);
 
 	try {
-    	fillCells();
+		fillCells();
 	} catch (Exception exception) {
-    	println(exception.getMessage());
-    	background(bgCol);
+		println(exception.getMessage());
+		background(bgCol);
 	}
 }
 
 void mouseClicked() {
-    bgCol = color(max(0, min(255, 255 * mouseX / width)));
-    
-    println(brightness(bgCol));
-    
-    recalcAvgCols();
-    redraw();
+	bgCol = color(max(0, min(255, 255 * mouseX / width)));
+	
+	println(brightness(bgCol));
+	
+	recalcAvgCols();
+	redraw();
 }
 
 //void mouseDragged() {
-//    mouseClicked();
+//	mouseClicked();
 //}
 
 color avgCol(int y, int x) {
@@ -203,7 +203,7 @@ void createCell(long index, int cellY, int cellX, float y, float x) {
 	}
 	
 	HintonCell cell = new HintonCell(avgCol(cellY, cellX));
-    hintonCells[cellY][cellX] = cell;
+	hintonCells[cellY][cellX] = cell;
 	cell.magnitude = maxWeight;
 	cell.descriptorAngles.add(angle);
 
@@ -214,11 +214,11 @@ void createCell(long index, int cellY, int cellX, float y, float x) {
 }
 
 void recalcAvgCols() {
-    for (int y = 0; y < hintonCells.length; y++) {
-        for (int x = 0; x < hintonCells[y].length; x++) {
-            hintonCells[y][x].avgCol = avgCol(y, x);
-        }
-    }
+	for (int y = 0; y < hintonCells.length; y++) {
+		for (int x = 0; x < hintonCells[y].length; x++) {
+			hintonCells[y][x].avgCol = avgCol(y, x);
+		}
+	}
 }
 
 void fillCells() {
