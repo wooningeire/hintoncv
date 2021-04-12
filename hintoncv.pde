@@ -38,11 +38,11 @@ final color PAINT_BLACK = color(36, 36, 36); // black - Carbon Black #1040
 	);
 	
 	//paintColsList = new ArrayList<Integer>(paintCols);
-	//Collections.addAll(paintColsList, PAINT_WHITE, PAINT_BLACK);
+	//Collections.addAll(paintCols, PAINT_WHITE, PAINT_BLACK);
 }
 
 color bgCol = color(127);//color(63, 91, 101);
-float brightnessThreshold;
+float bgLum;
 
 // hog settings
 final Size BLOCK_SIZE = new Size(8, 8);
@@ -81,7 +81,7 @@ void draw() {
 	rectMode(CENTER);
 	
 	background(bgCol);
-	brightnessThreshold = luminance(bgCol);
+	bgLum = luminance(bgCol);
 
 	try {
 		fillCells();
@@ -135,7 +135,7 @@ color avgColInCell(PImage srcImage, int cellY, int cellX, Size cellSize) {
 void fillCells() {
 	for (int y = 0; y < hintonCells.length; y++) {
 		for (int x = 0; x < hintonCells[y].length; x++) {
-			hintonCells[y][x].fillShape(y, x, CELL_SIZE);
+			hintonCells[y][x].fillShape(y, x, CELL_SIZE, bgLum, bgCol);
 		}
 	}
 }

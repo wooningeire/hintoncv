@@ -10,13 +10,13 @@ class HintonCell {
 	HintonCell() {}
 
 	// Only considers paint colors on the same side of the threshold as this cell's color
-	color closestPaintCol() {
+	color closestPaintCol(float lumThreshold, color fallbackCol) {
 		float leastDist = Float.POSITIVE_INFINITY;
 		color closestCol = 0;
 
 		boolean validColFound = false;
 
-		boolean cellBrighterThanBg = luminance(targetCol) - brightnessThreshold > 0;
+		boolean cellBrighterThanBg = luminance(targetCol) - lumThreshold > 0;
 
 		// not optimized
 		for (color paintCol : paintCols) {
@@ -28,27 +28,12 @@ class HintonCell {
 			//color paintCol = paintColsList.get(i);
 
 			float paintColLum = luminance(paintCol);
-			boolean paintColBrighterThanBg = paintColLum - brightnessThreshold < 0;
+			boolean paintColBrighterThanBg = paintColLum - lumThreshold > 0;
 
-			if (cellBrighterThanBg && paintColBrighterThanBg || !cellBrighterThanBg && !paintColBrighterThanBg) {
-				continue;
-			}
-	
-			//float hueDiff = min(abs(hue(paintCol) - hue(avgCol)), 360 - abs(hue(paintCol) - hue(avgCol)));
-			//float satDiff = saturation(paintCol) - saturation(avgCol);
-			//float lumDiff = paintColLum - lum();
-			
-			//float dist = sq(hueDiff) + sq(satDiff) + sq(lumDiff);
+			boolean brightnessDirectionMatches = cellBrighterThanBg && paintColBrighterThanBg || !cellBrighterThanBg && !paintColBrighterThanBg;
+			if (!brightnessDirectionMatches) continue;
 
-			// Perceived color distance according to https://en.wikipedia.org/wiki/Color_difference
-			float redDiff = (red(paintCol) - red(targetCol)) / 255;
-			float greenDiff = (green(paintCol) - green(targetCol)) / 255;
-			float blueDiff = (blue(paintCol) - blue(targetCol)) / 255;
-			
-			float redAvg = (red(paintCol) + red(targetCol)) / 2;
-			
-			float dist = (2 + redAvg / 256) * sq(redDiff) + 4 * sq(greenDiff) + (2 + (255 - redAvg) / 256) * sq(blueDiff);
-
+			float dist = colorDiff(paintCol, targetCol);
 			if (dist < leastDist) {
 				leastDist = dist;
 				closestCol = paintCol;
@@ -57,11 +42,9 @@ class HintonCell {
 			}
 		}
 	
- 		if (!validColFound) {
-	 		throw new RuntimeException("No paint color was found that can represent this cell color's brightness");
-	 	}
-	
-		return closestCol;
+		return validColFound
+				? closestCol
+				: fallbackCol;
 	}
 
 	float lum() {
@@ -79,11 +62,11 @@ class HintonCell {
 		magnitude = ((nDescriptorCells - 1.) / nDescriptorCells) * magnitude + (1. / nDescriptorCells) * maxWeight;
 	}
 	
-	void fillShape(int cellY, int cellX, Size cellSize) {
-		float brightnessDiff = lum() - brightnessThreshold;
+	void fillShape(int cellY, int cellX, Size cellSize, float lumThreshold, color fallbackCol) {
+		float brightnessDiff = lum() - lumThreshold;
 
-		color col = colorFromBrightness(lum(), closestPaintCol());//colorFromBrightness(lum());
-		float unitWidthLinear = brightnessDiff / (luminance(col) - brightnessThreshold);
+		color col = colorFromBrightness(lum(), closestPaintCol(lumThreshold, fallbackCol), lumThreshold);//colorFromBrightness(lum());
+		float unitWidthLinear = brightnessDiff / (luminance(col) - lumThreshold);
 		
 		//float unitWidth = sqrt(unitWidthLinear); // square
 		float unitWidth = 2 * sqrt(unitWidthLinear / PI); // circle
@@ -108,28 +91,45 @@ class HintonCell {
 	}
 }
 
-color colorFromBrightness(float lum, color base) {
+color colorFromBrightness(float lum, color base, float lumThreshold) {
 	color a;
 	color b;
 	float x;
 
-	if (lum < brightnessThreshold) {
+	if (lum < lumThreshold) {
 		a = PAINT_BLACK;
 		b = base;
 		//a = color(0);
 		//b = BASE_DARK_COL;
 	
-		x = lum / (brightnessThreshold / 255);
+		x = lum / (lumThreshold / 255);
 	} else {
 		a = base;
 		b = PAINT_WHITE;
 		//a = BASE_LIGHT_COL;
 		//b = color(255);
 	
-		x = (lum - brightnessThreshold) / (1 - brightnessThreshold / 255);
+		x = (lum - lumThreshold) / (1 - lumThreshold / 255);
 	}
 	
 	return lerpColor(a, b, x / 255);
+}
+
+float colorDiff(color col0, color col1) {
+	//float hueDiff = min(abs(hue(paintCol) - hue(avgCol)), 360 - abs(hue(paintCol) - hue(avgCol)));
+	//float satDiff = saturation(paintCol) - saturation(avgCol);
+	//float lumDiff = paintColLum - lum();
+	
+	//float dist = sq(hueDiff) + sq(satDiff) + sq(lumDiff);
+
+	// Perceived color distance according to https://en.wikipedia.org/wiki/Color_difference
+	float redDiff = (red(col1) - red(col0)) / 255;
+	float greenDiff = (green(col1) - green(col0)) / 255;
+	float blueDiff = (blue(col1) - blue(col0)) / 255;
+	
+	float redAvg = (red(col1) + red(col0)) / 2;
+	
+	return (2 + redAvg / 256) * sq(redDiff) + 4 * sq(greenDiff) + (2 + (255 - redAvg) / 256) * sq(blueDiff);
 }
 
 float luminance(color col) {
