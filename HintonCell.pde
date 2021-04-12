@@ -1,14 +1,14 @@
 class HintonCell {
-	color avgCol;
+	color targetCol;
 
 	private float angle;
 	private float magnitude;
 	private float nDescriptorCells = 0;
-  
+
 	private float lumCache = Float.NaN;
 	
-	HintonCell(color avgCol) {
-		this.avgCol = avgCol;
+	HintonCell(color targetCol) {
+		this.targetCol = targetCol;
 	}
 
 	// Only considers paint colors on the same side of the threshold as this cell's color
@@ -18,7 +18,7 @@ class HintonCell {
 
 		boolean validColFound = false;
 
-		boolean brighter = luminance(avgCol) - brightnessThreshold > 0;
+		boolean cellBrighterThanBg = luminance(targetCol) - brightnessThreshold > 0;
 
 		// not optimized
 		for (color paintCol : paintCols) {
@@ -28,11 +28,13 @@ class HintonCell {
 			//}
 			
 			//color paintCol = paintColsList.get(i);
-	
+
 			float paintColLum = luminance(paintCol);
-			if (brighter && paintColLum - brightnessThreshold < 0 || !brighter && paintColLum - brightnessThreshold > 0) {
+			boolean paintColBrighterThanBg = paintColLum - brightnessThreshold < 0;
+
+			if (cellBrighterThanBg && paintColBrighterThanBg || !cellBrighterThanBg && !paintColBrighterThanBg) {
 				continue;
-  			}
+			}
 	
 			//float hueDiff = min(abs(hue(paintCol) - hue(avgCol)), 360 - abs(hue(paintCol) - hue(avgCol)));
 			//float satDiff = saturation(paintCol) - saturation(avgCol);
@@ -41,13 +43,13 @@ class HintonCell {
 			//float dist = sq(hueDiff) + sq(satDiff) + sq(lumDiff);
 
 			// Perceived color distance according to https://en.wikipedia.org/wiki/Color_difference
-            float redDiff = (red(paintCol) - red(avgCol)) / 255;
-            float greenDiff = (green(paintCol) - green(avgCol)) / 255;
-            float blueDiff = (blue(paintCol) - blue(avgCol)) / 255;
-            
-            float redAvg = (red(paintCol) + red(avgCol)) / 2;
-            
-            float dist = (2 + redAvg / 256) * sq(redDiff) + 4 * sq(greenDiff) + (2 + (255 - redAvg) / 256) * sq(blueDiff);
+			float redDiff = (red(paintCol) - red(targetCol)) / 255;
+			float greenDiff = (green(paintCol) - green(targetCol)) / 255;
+			float blueDiff = (blue(paintCol) - blue(targetCol)) / 255;
+			
+			float redAvg = (red(paintCol) + red(targetCol)) / 2;
+			
+			float dist = (2 + redAvg / 256) * sq(redDiff) + 4 * sq(greenDiff) + (2 + (255 - redAvg) / 256) * sq(blueDiff);
 
 			if (dist < leastDist) {
 				leastDist = dist;
@@ -57,27 +59,25 @@ class HintonCell {
 			}
 		}
 	
-   		if (!validColFound) {
-	   		throw new RuntimeException("No paint color was found that can represent this cell color's brightness");
-	   	}
+ 		if (!validColFound) {
+	 		throw new RuntimeException("No paint color was found that can represent this cell color's brightness");
+	 	}
 	
 		return closestCol;
 	}
 
 	float lum() {
-		if (Float.isNaN(lumCache)) {
-			lumCache = luminance(avgCol);
-		}
-	
-		return lumCache;
+    return Float.isNaN(lumCache)
+		    ? lumCache = luminance(targetCol)
+		    : lumCache;
 	}
 
 	void countDescriptorCell(float descriptorAngle, float maxWeight) {
-    	nDescriptorCells++;
-    
-    	// Equivalent to calculating the average
-        angle = ((nDescriptorCells - 1.) / nDescriptorCells) * angle + (1. / nDescriptorCells) * descriptorAngle;
-        magnitude = ((nDescriptorCells - 1.) / nDescriptorCells) * magnitude + (1. / nDescriptorCells) * maxWeight;
+		nDescriptorCells++;
+	
+		// Equivalent to calculating the average
+		angle = ((nDescriptorCells - 1.) / nDescriptorCells) * angle + (1. / nDescriptorCells) * descriptorAngle;
+		magnitude = ((nDescriptorCells - 1.) / nDescriptorCells) * magnitude + (1. / nDescriptorCells) * maxWeight;
 	}
 	
 	void fillShape(int cellY, int cellX) {

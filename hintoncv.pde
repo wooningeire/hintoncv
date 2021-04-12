@@ -5,7 +5,7 @@ import org.opencv.objdetect.*;
 
 // image settings
 final String IMG_PATH = "leworthy.jpg";
-final int TARGET_WIDTH = 128;
+final int TARGET_WIDTH = 256;
 final int TARGET_HEIGHT = 256;
 
 final int DISPLAY_WIDTH = 512;
@@ -172,7 +172,7 @@ void iterateDescriptors() {
 		int cellY = (int)(y / hog.get_cellSize().height);
 		int cellX = (int)(x / hog.get_cellSize().width);
 
-		createCell(index, cellY, cellX);
+		countCellData(index, cellY, cellX);
 		
 		
 		// Increment all position markers (equivalent alternative to having 5 nested `for`-loops)
@@ -192,13 +192,13 @@ void iterateDescriptors() {
 	}
 }
 
-void createCell(long index, int cellY, int cellX) {
-    HintonCell cell = hintonCells[cellY][cellX];
-    if (cell == null) {
-        cell = new HintonCell(avgCol(cellY, cellX));
-        hintonCells[cellY][cellX] = cell;
-    }
-    
+void countCellData(long index, int cellY, int cellX) {
+	HintonCell cell = hintonCells[cellY][cellX];
+	if (cell == null) {
+		cell = new HintonCell(avgCol(cellY, cellX));
+		hintonCells[cellY][cellX] = cell;
+	}
+	
 	float maxWeight = 0;
 	float angle = 0;
 	
@@ -222,7 +222,7 @@ void createCell(long index, int cellY, int cellX) {
 void recalcAvgCols() {
 	for (int y = 0; y < hintonCells.length; y++) {
 		for (int x = 0; x < hintonCells[y].length; x++) {
-			hintonCells[y][x].avgCol = avgCol(y, x);
+			hintonCells[y][x].targetCol = avgCol(y, x);
 		}
 	}
 }
