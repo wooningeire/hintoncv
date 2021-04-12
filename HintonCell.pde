@@ -10,11 +10,9 @@ class HintonCell {
 	HintonCell() {}
 
 	// Only considers paint colors on the same side of the threshold as this cell's color
-	color closestPaintCol(float lumThreshold, color fallbackCol) {
+	Optional<Integer> closestPaintCol(float lumThreshold) {
 		float leastDist = Float.POSITIVE_INFINITY;
-		color closestCol = 0;
-
-		boolean validColFound = false;
+		Optional<Integer> closestCol = Optional.empty();
 
 		boolean cellBrighterThanBg = luminance(targetCol) - lumThreshold > 0;
 
@@ -36,15 +34,11 @@ class HintonCell {
 			float dist = colorDiff(paintCol, targetCol);
 			if (dist < leastDist) {
 				leastDist = dist;
-				closestCol = paintCol;
-				
-				validColFound = true;
+				closestCol = Optional.of(paintCol);
 			}
 		}
 	
-		return validColFound
-				? closestCol
-				: fallbackCol;
+		return closestCol;
 	}
 
 	float lum() {
@@ -65,7 +59,7 @@ class HintonCell {
 	void fillShape(int cellY, int cellX, Size cellSize, float lumThreshold, color fallbackCol, color darkestCol, color lightestCol) {
 		float brightnessDiff = lum() - lumThreshold;
 
-		color col = lerpColToExtreme(lum(), closestPaintCol(lumThreshold, fallbackCol), lumThreshold, darkestCol, lightestCol);//colorFromBrightness(lum());
+		color col = lerpColToExtreme(lum(), closestPaintCol(lumThreshold).orElse(fallbackCol), lumThreshold, darkestCol, lightestCol);//colorFromBrightness(lum());
 		float unitWidthLinear = brightnessDiff / (luminance(col) - lumThreshold);
 		
 		//float unitWidth = sqrt(unitWidthLinear); // square
@@ -91,20 +85,20 @@ class HintonCell {
 	}
 }
 
-color lerpColToExtreme(float lum, color base, float lumThreshold, color darkestCol, color lightestCol) {
+color lerpColToExtreme(float lum, color baseCol, float lumThreshold, color darkestCol, color lightestCol) {
 	color darkCol;
 	color lightCol;
 	float lerpAmount;
 
 	if (lum < lumThreshold) {
 		darkCol = darkestCol;
-		lightCol = base;
+		lightCol = baseCol;
 		//darkCol = color(0);
 		//lightCol = BASE_DARK_COL;
 	
 		lerpAmount = lum / (lumThreshold / 255);
 	} else {
-		darkCol = base;
+		darkCol = baseCol;
 		lightCol = lightestCol;
 		//darkCol = BASE_LIGHT_COL;
 		//lightCol = color(255);
