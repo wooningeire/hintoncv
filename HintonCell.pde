@@ -1,13 +1,11 @@
 class HintonCell {
 	color avgCol;
 
-    private float angle;
-  	private float magnitude;
-  	private float nDescriptorCells = 0;
+	private float angle;
+	private float magnitude;
+	private float nDescriptorCells = 0;
   
 	private float lumCache = Float.NaN;
-	
-	HintonCell() {}
 	
 	HintonCell(color avgCol) {
 		this.avgCol = avgCol;

@@ -5,6 +5,11 @@ import org.opencv.objdetect.*;
 
 // image settings
 final String IMG_PATH = "leworthy.jpg";
+final int TARGET_WIDTH = 128;
+final int TARGET_HEIGHT = 256;
+
+final int DISPLAY_WIDTH = 512;
+final int DISPLAY_HEIGHT = 512;
 
 // hinton settings
 final float MAG_INVERSE_OFFSET = 1; // Constant that determines how much stretching is applied to all hinton cells
@@ -56,13 +61,13 @@ HOGDescriptor hog;
 HintonCell[][] hintonCells;
 
 void settings() {
-	size(512, 512);
+	size(DISPLAY_WIDTH, DISPLAY_HEIGHT);
 }
 
 void setup() {
 	// Image setup
 	src = loadImage(IMG_PATH);
-	src.resize(256, 256);
+	src.resize(TARGET_WIDTH, TARGET_HEIGHT);
 	
 	ocv = new OpenCV(this, src);
 	
@@ -91,7 +96,7 @@ void draw() {
 	clear();
 	
 	// Draw all hinton cells
-	scale(2, 2);
+	scale((float)DISPLAY_WIDTH / TARGET_WIDTH, (float)DISPLAY_HEIGHT / TARGET_HEIGHT);
 	
 	noStroke();
 	ellipseMode(CENTER);
@@ -199,7 +204,7 @@ void createCell(long index, int cellY, int cellX) {
 	
 	for (int j = 0; j < hog.get_nbins(); j++) {
 		double weight = matDest.get((int)index + j, 0)[0];
-		
+
 		if (weight > maxWeight) {
 			maxWeight = (float)weight;
 			angle = j * PI / hog.get_nbins();
