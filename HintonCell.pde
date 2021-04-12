@@ -6,10 +6,8 @@ class HintonCell {
 	private float nDescriptorCells = 0;
 
 	private float lumCache = Float.NaN;
-	
-	HintonCell(color targetCol) {
-		this.targetCol = targetCol;
-	}
+
+	HintonCell() {}
 
 	// Only considers paint colors on the same side of the threshold as this cell's color
 	color closestPaintCol() {
@@ -67,20 +65,21 @@ class HintonCell {
 	}
 
 	float lum() {
-    return Float.isNaN(lumCache)
-		    ? lumCache = luminance(targetCol)
-		    : lumCache;
+		return Float.isNaN(lumCache)
+				? lumCache = luminance(targetCol)
+				: lumCache;
 	}
 
 	void countDescriptorCell(float descriptorAngle, float maxWeight) {
 		nDescriptorCells++;
 	
 		// Equivalent to calculating the average
+		// TODO shouldn't average angles like this
 		angle = ((nDescriptorCells - 1.) / nDescriptorCells) * angle + (1. / nDescriptorCells) * descriptorAngle;
 		magnitude = ((nDescriptorCells - 1.) / nDescriptorCells) * magnitude + (1. / nDescriptorCells) * maxWeight;
 	}
 	
-	void fillShape(int cellY, int cellX) {
+	void fillShape(int cellY, int cellX, Size cellSize) {
 		float brightnessDiff = lum() - brightnessThreshold;
 
 		color col = colorFromBrightness(lum(), closestPaintCol());//colorFromBrightness(lum());
@@ -89,8 +88,8 @@ class HintonCell {
 		//float unitWidth = sqrt(unitWidthLinear); // square
 		float unitWidth = 2 * sqrt(unitWidthLinear / PI); // circle
 		
-		float x = (cellX + .5) * (float)hog.get_cellSize().width;
-		float y = (cellY + .5) * (float)hog.get_cellSize().height;
+		float x = (cellX + .5) * (float)cellSize.width;
+		float y = (cellY + .5) * (float)cellSize.height;
 		
 		float magInverse = 1 - magnitude * MAG_INVERSE_OFFSET;
 		
@@ -102,8 +101,8 @@ class HintonCell {
 		rotate(angle);
 		scale(1 / magInverse, magInverse);
 		
-		//rect(0, 0, unitWidth * (float)hog.get_cellSize().width, unitWidth * (float)hog.get_cellSize().height);
-		ellipse(0, 0, unitWidth * (float)hog.get_cellSize().width, unitWidth * (float)hog.get_cellSize().height);
+		//rect(0, 0, unitWidth * (float)cellSize.width, unitWidth * (float)cellSize.height);
+		ellipse(0, 0, unitWidth * (float)cellSize.width, unitWidth * (float)cellSize.height);
 		
 		pop();
 	}

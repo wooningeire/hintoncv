@@ -50,14 +50,7 @@ final Size BLOCK_STRIDE = new Size(4, 4);
 final Size CELL_SIZE = new Size(4, 4);
 final int N_BUCKETS = 4;
 
-OpenCV ocv;
-PImage src;
-PImage result;
-
-Mat matSrc;
-MatOfFloat matDest;
-HOGDescriptor hog;
-
+PImage srcImage;
 HintonCell[][] hintonCells;
 
 void settings() {
@@ -66,28 +59,13 @@ void settings() {
 
 void setup() {
 	// Image setup
-	src = loadImage(IMG_PATH);
-	src.resize(TARGET_WIDTH, TARGET_HEIGHT);
-	
-	ocv = new OpenCV(this, src);
-	
-	matSrc = ocv.getGray();
-	matDest = new MatOfFloat();
-	
-	// Calculate directions
-	hog = new HOGDescriptor(new Size(src.width, src.height), BLOCK_SIZE, BLOCK_STRIDE, CELL_SIZE, N_BUCKETS);
-	hog.compute(matSrc, matDest);
-	
-	// Calculate and generate graphics
+	srcImage = loadImage(IMG_PATH);
+	srcImage.resize(TARGET_WIDTH, TARGET_HEIGHT);
 
-	int cellsWinY = (int)(hog.get_winSize().height / hog.get_cellSize().height);
-	int cellsWinX = (int)(hog.get_winSize().width / hog.get_cellSize().width);
-	hintonCells = new HintonCell[cellsWinY][cellsWinX];
-	
 	//stroke(255, 0, 0);
-	
-	// Create the hinton cells and assign their angles and average colors
-	iterateDescriptors();
+	hintonCells = generateHintonCells(srcImage, BLOCK_SIZE, BLOCK_STRIDE, CELL_SIZE, N_BUCKETS);
+
+	recalculateAvgCols(srcImage, CELL_SIZE);
 
 	noLoop();
 }
@@ -118,7 +96,7 @@ void mouseClicked() {
 	
 	println(brightness(bgCol));
 	
-	recalcAvgCols();
+	recalculateAvgCols(srcImage, CELL_SIZE);
 	redraw();
 }
 
@@ -126,16 +104,24 @@ void mouseClicked() {
 //	mouseClicked();
 //}
 
-color avgCol(int y, int x) {
-	int count = (int)(hog.get_cellSize().width * hog.get_cellSize().height);
+void recalculateAvgCols(PImage srcImage, Size cellSize) {
+	for (int y = 0; y < hintonCells.length; y++) {
+		for (int x = 0; x < hintonCells[y].length; x++) {
+			hintonCells[y][x].targetCol = avgColInCell(srcImage, y, x, cellSize);
+		}
+	}
+}
+
+color avgColInCell(PImage srcImage, int cellY, int cellX, Size cellSize) {
+	int nPixelsInCell = (int)(cellSize.width * cellSize.height);
 	
 	int r = 0;
 	int g = 0;
 	int b = 0;
 	
-	for (int iY = y * (int)hog.get_cellSize().height; iY < (y + 1) * hog.get_cellSize().height; iY++) {
-		for (int iX = x * (int)hog.get_cellSize().width; iX < (x + 1) * hog.get_cellSize().width; iX++) {
-			color col = src.get(iX, iY);
+	for (int y = cellY * (int)cellSize.height; y < (cellY + 1) * cellSize.height; y++) {
+		for (int x = cellX * (int)cellSize.width; x < (cellX + 1) * cellSize.width; x++) {
+			color col = srcImage.get(x, y);
 			
 			r += red(col);
 			g += green(col);
@@ -143,94 +129,13 @@ color avgCol(int y, int x) {
 		}
 	}
 	
-	return color((float)r / count, (float)g / count, (float)b / count);
-}
-
-void iterateDescriptors() {
-	// Maximum positions on the image for each block (any higher and the block will exceed the image boundaries)
-	// Does not factor in padding
-	int maxBlockY = (int)((hog.get_winSize().height - (hog.get_blockSize().height - hog.get_blockStride().height)) / hog.get_blockStride().height);
-	//int maxBlockX = (int)((hog.get_winSize().width - (hog.get_blockSize().width - hog.get_blockStride().width)) / hog.get_blockStride().width); // unused
-	
-	int cellsPerBlockY = (int)(hog.get_blockSize().height / hog.get_cellSize().height);
-	int cellsPerBlockX = (int)(hog.get_blockSize().width / hog.get_cellSize().width);
-	
-	// Iterate through the first descriptor contents in the HOG result
-	
-	// Blocks themselves
-	int blockX = 0; // Represents the `blockX`th block from the left of the descriptor result
-	int blockY = 0; // Represents the `blockY`th block from the top of the descriptor result
-	
-	// Cells within each block
-	int blockCellX = 0; // Represents the `blockCellX`th cell from the left within the block
-	int blockCellY = 0; // Represents the `blockCellY`th cell from the top within the block
-	
-	for (long index = 0; index < hog.getDescriptorSize(); index += hog.get_nbins()) {
-		float y = (float)(hog.get_blockStride().height * blockY + hog.get_cellSize().height * blockCellY); // Y coordinate (px) of the current cell
-		float x = (float)(hog.get_blockStride().width * blockX + hog.get_cellSize().width * blockCellX); // X coordinate (px) of the current cell
-		
-		int cellY = (int)(y / hog.get_cellSize().height);
-		int cellX = (int)(x / hog.get_cellSize().width);
-
-		countCellData(index, cellY, cellX);
-		
-		
-		// Increment all position markers (equivalent alternative to having 5 nested `for`-loops)
-		blockCellY++;
-		
-		blockCellX += blockCellY / cellsPerBlockY; // If `blockCellY` > `cellsPerBlockY`, `blockCellX` will increment by 1, otherwise it will not increment
-		blockCellY %= cellsPerBlockY; // If `blockCellX` was incremented, `blockCellY` will be reset down to 0
-		
-		blockY += blockCellX / cellsPerBlockX;
-		blockCellX %= cellsPerBlockX;
-		
-		blockX += blockY / maxBlockY;
-		blockY %= maxBlockY;
-		
-		// iDescriptor += ...
-		// blockX %= ...
-	}
-}
-
-void countCellData(long index, int cellY, int cellX) {
-	HintonCell cell = hintonCells[cellY][cellX];
-	if (cell == null) {
-		cell = new HintonCell(avgCol(cellY, cellX));
-		hintonCells[cellY][cellX] = cell;
-	}
-	
-	float maxWeight = 0;
-	float angle = 0;
-	
-	for (int j = 0; j < hog.get_nbins(); j++) {
-		double weight = matDest.get((int)index + j, 0)[0];
-
-		if (weight > maxWeight) {
-			maxWeight = (float)weight;
-			angle = j * PI / hog.get_nbins();
-		}
-	}
-	
-	cell.countDescriptorCell(angle, maxWeight);
-
-	
-	// Draws normal lines
-	//float r = 1;
-	//line(x - r * cos(angle), y + r * sin(angle), x + r * cos(angle), y - r * sin(angle));
-}
-
-void recalcAvgCols() {
-	for (int y = 0; y < hintonCells.length; y++) {
-		for (int x = 0; x < hintonCells[y].length; x++) {
-			hintonCells[y][x].targetCol = avgCol(y, x);
-		}
-	}
+	return color((float)r / nPixelsInCell, (float)g / nPixelsInCell, (float)b / nPixelsInCell);
 }
 
 void fillCells() {
 	for (int y = 0; y < hintonCells.length; y++) {
 		for (int x = 0; x < hintonCells[y].length; x++) {
-			hintonCells[y][x].fillShape(y, x);
+			hintonCells[y][x].fillShape(y, x, CELL_SIZE);
 		}
 	}
 }
