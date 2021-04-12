@@ -65,7 +65,7 @@ void setup() {
 	//stroke(255, 0, 0);
 	hintonCells = generateHintonCells(srcImage, BLOCK_SIZE, BLOCK_STRIDE, CELL_SIZE, N_BUCKETS);
 
-	recalculateAvgCols(srcImage, CELL_SIZE);
+	recalculateAvgCols(srcImage, CELL_SIZE, hintonCells);
 
 	noLoop();
 }
@@ -103,7 +103,7 @@ void mouseClicked() {
 //	mouseClicked();
 //}
 
-void recalculateAvgCols(PImage srcImage, Size cellSize) {
+void recalculateAvgCols(PImage srcImage, Size cellSize, HintonCell[][] hintonCells) {
 	for (int y = 0; y < hintonCells.length; y++) {
 		for (int x = 0; x < hintonCells[y].length; x++) {
 			hintonCells[y][x].setTargetCol(avgColInCell(srcImage, y, x, cellSize));

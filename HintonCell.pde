@@ -1,7 +1,10 @@
 class HintonCell {
-  private color targetCol;
+	private color targetCol;
 
+	private float cosine;
+	private float sine;
 	private float angle;
+
 	private float magnitude;
 	private float nDescriptorCells = 0;
 
@@ -41,11 +44,11 @@ class HintonCell {
 		return closestCol;
 	}
 
-  void setTargetCol(color targetCol) {
-    lumCache = Float.NaN;
-    this.targetCol = targetCol;
-  }
-  color getTargetCol() { return this.targetCol; }
+	void setTargetCol(color targetCol) {
+		lumCache = Float.NaN;
+		this.targetCol = targetCol;
+	}
+	color getTargetCol() { return this.targetCol; }
 
 	float lum() {
 		return Float.isNaN(lumCache)
@@ -56,10 +59,15 @@ class HintonCell {
 	void countDescriptorCell(float descriptorAngle, float maxWeight) {
 		nDescriptorCells++;
 	
+		float descriptorCosine = cos(descriptorAngle);
+		float descriptorSine = sin(descriptorAngle);
+
 		// Equivalent to calculating the average
-		// TODO shouldn't average angles like this
-		angle = ((nDescriptorCells - 1.) / nDescriptorCells) * angle + (1. / nDescriptorCells) * descriptorAngle;
-		magnitude = ((nDescriptorCells - 1.) / nDescriptorCells) * magnitude + (1. / nDescriptorCells) * maxWeight;
+		cosine = ((nDescriptorCells - 1.) * cosine + descriptorCosine) / nDescriptorCells;
+		sine = ((nDescriptorCells - 1.) * sine + descriptorSine) / nDescriptorCells;
+		angle = atan2(sine, cosine);
+
+		magnitude = ((nDescriptorCells - 1.) * magnitude + maxWeight) / nDescriptorCells;
 	}
 	
 	void fillShape(int cellY, int cellX, Size cellSize, float lumThreshold, color fallbackCol, color darkestCol, color lightestCol) {
