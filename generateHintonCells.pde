@@ -11,8 +11,8 @@ HintonCell[][] generateHintonCells(PImage srcImage, Size blockSize, Size blockSt
 	Mat srcMat = ocv.getGray();
 	Size winSize = new Size(srcImage.width, srcImage.height);
 
-	int nCellsY = (int)(winSize.height / CELL_SIZE.height);
-	int nCellsX = (int)(winSize.width / CELL_SIZE.width);
+	int nCellsY = (int)(winSize.height / cellSize.height);
+	int nCellsX = (int)(winSize.width / cellSize.width);
 	HintonCell[][] hintonCells = new HintonCell[nCellsY][nCellsX];
 	
 	HOGDescriptor hog = new HOGDescriptor(winSize, blockSize, blockStrideSize, cellSize, nBuckets);

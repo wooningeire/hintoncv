@@ -135,7 +135,7 @@ color avgColInCell(PImage srcImage, int cellY, int cellX, Size cellSize) {
 void fillCells() {
 	for (int y = 0; y < hintonCells.length; y++) {
 		for (int x = 0; x < hintonCells[y].length; x++) {
-			hintonCells[y][x].fillShape(y, x, CELL_SIZE, bgLum, bgCol);
+			hintonCells[y][x].fillShape(y, x, CELL_SIZE, bgLum, bgCol, PAINT_BLACK, PAINT_WHITE);
 		}
 	}
 }

@@ -62,10 +62,10 @@ class HintonCell {
 		magnitude = ((nDescriptorCells - 1.) / nDescriptorCells) * magnitude + (1. / nDescriptorCells) * maxWeight;
 	}
 	
-	void fillShape(int cellY, int cellX, Size cellSize, float lumThreshold, color fallbackCol) {
+	void fillShape(int cellY, int cellX, Size cellSize, float lumThreshold, color fallbackCol, color darkestCol, color lightestCol) {
 		float brightnessDiff = lum() - lumThreshold;
 
-		color col = colorFromBrightness(lum(), closestPaintCol(lumThreshold, fallbackCol), lumThreshold);//colorFromBrightness(lum());
+		color col = lerpColToExtreme(lum(), closestPaintCol(lumThreshold, fallbackCol), lumThreshold, darkestCol, lightestCol);//colorFromBrightness(lum());
 		float unitWidthLinear = brightnessDiff / (luminance(col) - lumThreshold);
 		
 		//float unitWidth = sqrt(unitWidthLinear); // square
@@ -91,28 +91,28 @@ class HintonCell {
 	}
 }
 
-color colorFromBrightness(float lum, color base, float lumThreshold) {
-	color a;
-	color b;
-	float x;
+color lerpColToExtreme(float lum, color base, float lumThreshold, color darkestCol, color lightestCol) {
+	color darkCol;
+	color lightCol;
+	float lerpAmount;
 
 	if (lum < lumThreshold) {
-		a = PAINT_BLACK;
-		b = base;
-		//a = color(0);
-		//b = BASE_DARK_COL;
+		darkCol = darkestCol;
+		lightCol = base;
+		//darkCol = color(0);
+		//lightCol = BASE_DARK_COL;
 	
-		x = lum / (lumThreshold / 255);
+		lerpAmount = lum / (lumThreshold / 255);
 	} else {
-		a = base;
-		b = PAINT_WHITE;
-		//a = BASE_LIGHT_COL;
-		//b = color(255);
+		darkCol = base;
+		lightCol = lightestCol;
+		//darkCol = BASE_LIGHT_COL;
+		//lightCol = color(255);
 	
-		x = (lum - lumThreshold) / (1 - lumThreshold / 255);
+		lerpAmount = (lum - lumThreshold) / (1 - lumThreshold / 255);
 	}
 	
-	return lerpColor(a, b, x / 255);
+	return lerpColor(darkCol, lightCol, lerpAmount / 255);
 }
 
 float colorDiff(color col0, color col1) {
