@@ -4,7 +4,7 @@ import org.opencv.core.*;
 import org.opencv.objdetect.*;
 
 // image settings
-final String IMG_PATH = "leworthy.jpg";
+final String IMG_PATH = "shakespeare.jpg";
 final int TARGET_WIDTH = 256;
 final int TARGET_HEIGHT = 256;
 
@@ -96,7 +96,6 @@ void mouseClicked() {
 	
 	println(brightness(bgCol));
 	
-	recalculateAvgCols(srcImage, CELL_SIZE);
 	redraw();
 }
 
@@ -107,7 +106,7 @@ void mouseClicked() {
 void recalculateAvgCols(PImage srcImage, Size cellSize) {
 	for (int y = 0; y < hintonCells.length; y++) {
 		for (int x = 0; x < hintonCells[y].length; x++) {
-			hintonCells[y][x].targetCol = avgColInCell(srcImage, y, x, cellSize);
+			hintonCells[y][x].setTargetCol(avgColInCell(srcImage, y, x, cellSize));
 		}
 	}
 }

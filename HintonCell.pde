@@ -1,5 +1,5 @@
 class HintonCell {
-	color targetCol;
+  private color targetCol;
 
 	private float angle;
 	private float magnitude;
@@ -40,6 +40,12 @@ class HintonCell {
 	
 		return closestCol;
 	}
+
+  void setTargetCol(color targetCol) {
+    lumCache = Float.NaN;
+    this.targetCol = targetCol;
+  }
+  color getTargetCol() { return this.targetCol; }
 
 	float lum() {
 		return Float.isNaN(lumCache)
